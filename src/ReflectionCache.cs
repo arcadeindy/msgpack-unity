@@ -37,6 +37,14 @@ namespace MsgPack
 			}
 
 			entry = new ReflectionCacheEntry (type);
+			if (type.BaseType != typeof(object)) {
+				var baseEntry = Lookup(type.BaseType);
+				foreach (var pair in baseEntry.FieldMap) {
+					if (!entry.FieldMap.ContainsKey(pair.Key)) {
+						entry.FieldMap[pair.Key] = pair.Value;
+					}
+				}
+			}
 			lock (_cache) {
 				_cache[type] = entry;
 			}
