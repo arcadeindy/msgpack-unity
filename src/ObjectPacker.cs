@@ -313,10 +313,12 @@ namespace MsgPack
 		// To keep timezone simply and correctly, the packer/unpacker convert value
 		// to/from UNIX timestamp.
 
+		static readonly DateTime UnixEpoch = new DateTime (1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+
 		static void DateTimePacker (ObjectPacker packer, MsgPackWriter writer, object o)
 		{
-			var epoc = new DateTime(1970, 1, 1).ToLocalTime ();
-			writer.Write ((long)((DateTime)o - epoc).TotalSeconds);
+			var span = ((DateTime)o).ToUniversalTime () - UnixEpoch;
+			writer.Write ((long)span.TotalSeconds);
 		}
 
 		static object DateTimeUnpacker (ObjectPacker packer, MsgPackReader reader)
@@ -327,8 +329,7 @@ namespace MsgPack
 				return null;
 			if (!reader.IsUnsigned ())
 				throw new FormatException ();
-			var epoc = new DateTime(1970, 1, 1).ToLocalTime ();
-			return epoc.AddSeconds (reader.ValueUnsigned);
+			return UnixEpoch.AddSeconds (reader.ValueUnsigned).ToLocalTime ();
 		}
 	}
 }
